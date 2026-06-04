@@ -1,0 +1,197 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f9fafb;
+    color: #111827;
+  }
+}
+
+@layer components {
+  /* ── Nav ─────────────────────────────────────────────────────── */
+  .photos-nav {
+    @apply bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between shadow-sm;
+  }
+  .photos-nav-brand {
+    @apply text-lg font-semibold text-indigo-600;
+  }
+  .photos-nav-link {
+    @apply text-sm text-gray-600 hover:text-indigo-600 transition-colors no-underline;
+  }
+  .photos-nav-link-active {
+    @apply text-indigo-600 font-medium;
+  }
+
+  /* ── Buttons ─────────────────────────────────────────────────── */
+  .btn-primary {
+    @apply px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer border-0;
+  }
+  .btn-primary-full {
+    @apply w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg text-sm transition-colors cursor-pointer border-0;
+  }
+  .btn-secondary {
+    @apply px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors cursor-pointer border-0;
+  }
+  .btn-ghost-sm {
+    @apply text-xs px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition-colors cursor-pointer border-0;
+  }
+  .btn-outline-sm {
+    @apply text-sm px-4 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors cursor-pointer border-0;
+  }
+  .btn-login-link {
+    @apply text-sm px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors no-underline;
+  }
+
+  /* ── Auth / folder cards ─────────────────────────────────────── */
+  .auth-card {
+    @apply bg-white rounded-2xl shadow-md p-8 w-full max-w-sm;
+  }
+  .auth-wrap {
+    @apply min-h-screen flex items-center justify-center;
+  }
+  .auth-title {
+    @apply text-2xl font-bold text-gray-900 mb-6 text-center;
+  }
+  .auth-subtitle {
+    @apply text-xl font-bold text-gray-900;
+  }
+  .auth-hint {
+    @apply text-sm text-gray-500 mt-1;
+  }
+
+  /* ── Form ────────────────────────────────────────────────────── */
+  .form-group {
+    @apply space-y-4;
+  }
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+  .form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm;
+  }
+  .form-error {
+    @apply text-xs text-red-600 mt-1;
+  }
+  .alert-error {
+    @apply text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2;
+  }
+  .alert-success {
+    @apply text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2;
+  }
+
+  /* ── Page ────────────────────────────────────────────────────── */
+  .page-header {
+    @apply flex items-center justify-between mb-6;
+  }
+  .page-title {
+    @apply text-2xl font-bold text-gray-900;
+  }
+  .section-date {
+    @apply text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3;
+  }
+
+  /* ── Gallery ─────────────────────────────────────────────────── */
+  .photo-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3;
+  }
+  .photo-thumb {
+    @apply relative aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer group;
+  }
+  .photo-thumb img {
+    @apply w-full h-full object-cover transition-transform group-hover:scale-105;
+  }
+  .photo-thumb-overlay {
+    @apply absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-end;
+  }
+  .photo-delete-btn {
+    @apply m-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-md border-0 cursor-pointer;
+  }
+  .photo-spinner {
+    @apply w-full h-full flex items-center justify-center;
+  }
+
+  /* ── Empty state ─────────────────────────────────────────────── */
+  .empty-state {
+    @apply text-center py-20 text-gray-400;
+  }
+  .empty-icon {
+    @apply text-5xl mb-4;
+  }
+  .empty-title {
+    @apply text-lg font-medium;
+  }
+  .empty-hint {
+    @apply text-sm mt-1;
+  }
+
+  /* ── Lightbox ────────────────────────────────────────────────── */
+  .lightbox-backdrop {
+    @apply fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4;
+  }
+  .lightbox-close {
+    @apply absolute top-4 right-4 text-white text-3xl leading-none hover:opacity-70 bg-transparent border-0 cursor-pointer;
+  }
+  .lightbox-caption {
+    @apply absolute bottom-4 text-white text-sm opacity-70;
+  }
+
+  /* ── Upload ──────────────────────────────────────────────────── */
+  .dropzone {
+    @apply border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors border-gray-300;
+  }
+  .dropzone-active {
+    @apply border-indigo-400 bg-indigo-50;
+  }
+  .dropzone-icon {
+    @apply text-4xl mb-3;
+  }
+  .dropzone-hint {
+    @apply text-xs text-gray-400 mt-1;
+  }
+  .upload-item {
+    @apply bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-3;
+  }
+  .upload-thumb {
+    @apply w-14 h-14 object-cover rounded-lg flex-shrink-0;
+  }
+  .upload-name {
+    @apply text-sm font-medium text-gray-800 truncate;
+  }
+  .upload-size {
+    @apply text-xs text-gray-400;
+  }
+  .upload-err {
+    @apply text-xs text-red-500;
+  }
+  .status-badge {
+    @apply text-xs px-2 py-0.5 rounded-full flex-shrink-0;
+  }
+  .status-pending  { @apply bg-gray-100 text-gray-600; }
+  .status-uploading { @apply bg-blue-100 text-blue-600; }
+  .status-done     { @apply bg-green-100 text-green-600; }
+  .status-error    { @apply bg-red-100 text-red-600; }
+
+  /* ── Spinner (page level) ────────────────────────────────────── */
+  .page-spinner {
+    @apply flex justify-center py-20;
+  }
+  .spinner {
+    @apply animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600;
+  }
+  .spinner-sm {
+    @apply animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-400;
+  }
+
+  /* ── Folder icon area ────────────────────────────────────────── */
+  .folder-icon {
+    @apply text-4xl mb-3;
+  }
+  .folder-card-header {
+    @apply text-center mb-6;
+  }
+}

@@ -2,8 +2,11 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-const API = 'http://localhost:8080/photo-service/api/photos';
+const BASE = (window as any).__PHOTOS_API_URL__ ?? 'http://localhost:8080';
+const API = `${BASE}/photo-service/api/photos`;
+const ALBUM_API = `${BASE}/photo-service/api/albums`;
 const FOLDER_PWD_KEY = 'folder_password';
+const FAVORITES_KEY = 'photos_favorites';
 
 export interface PhotoResponse {
   id: number;
@@ -19,11 +22,21 @@ export interface PhotosByDate {
   photos: PhotoResponse[];
 }
 
+export interface AlbumResponse {
+  id: number;
+  name: string;
+  photoCount: number;
+  createdAt: string;
+  coverPhoto: PhotoResponse | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PhotoService {
   folderUnlocked = signal(!!sessionStorage.getItem(FOLDER_PWD_KEY));
 
   constructor(private http: HttpClient) {}
+
+  // ── Folder ────────────────────────────────────────────────────
 
   getFolderStatus(): Observable<{ hasFolder: boolean }> {
     return this.http.get<{ hasFolder: boolean }>(`${API}/folder/status`);
@@ -53,6 +66,8 @@ export class PhotoService {
     return sessionStorage.getItem(FOLDER_PWD_KEY);
   }
 
+  // ── Photos ────────────────────────────────────────────────────
+
   listPhotos(): Observable<PhotosByDate[]> {
     return this.http.get<PhotosByDate[]>(API, { headers: this.folderHeaders() });
   }
@@ -63,14 +78,6 @@ export class PhotoService {
     return this.http.post<PhotoResponse>(`${API}/upload`, formData, {
       headers: this.folderHeaders()
     });
-  }
-
-  getPhotoUrl(photoId: number): string {
-    const token = localStorage.getItem('photos_token');
-    const pwd = this.getFolderPassword();
-    // We use a proxied fetch via the service, not direct URL, because we need custom headers.
-    // This method is used for constructing the request.
-    return `${API}/${photoId}/content`;
   }
 
   getPhotoBlob(photoId: number): Observable<Blob> {
@@ -85,6 +92,69 @@ export class PhotoService {
       headers: this.folderHeaders()
     });
   }
+
+  bulkDeletePhotos(photoIds: number[]): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${API}/bulk`, {
+      headers: this.folderHeaders(),
+      body: { photoIds }
+    });
+  }
+
+  // ── Albums ────────────────────────────────────────────────────
+
+  listAlbums(): Observable<AlbumResponse[]> {
+    return this.http.get<AlbumResponse[]>(ALBUM_API, { headers: this.folderHeaders() });
+  }
+
+  createAlbum(name: string): Observable<AlbumResponse> {
+    return this.http.post<AlbumResponse>(ALBUM_API, { name }, { headers: this.folderHeaders() });
+  }
+
+  deleteAlbum(albumId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${ALBUM_API}/${albumId}`, {
+      headers: this.folderHeaders()
+    });
+  }
+
+  getAlbumPhotos(albumId: number): Observable<PhotoResponse[]> {
+    return this.http.get<PhotoResponse[]>(`${ALBUM_API}/${albumId}/photos`, {
+      headers: this.folderHeaders()
+    });
+  }
+
+  addPhotosToAlbum(albumId: number, photoIds: number[]): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${ALBUM_API}/${albumId}/photos`, { photoIds }, {
+      headers: this.folderHeaders()
+    });
+  }
+
+  removePhotoFromAlbum(albumId: number, photoId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${ALBUM_API}/${albumId}/photos/${photoId}`, {
+      headers: this.folderHeaders()
+    });
+  }
+
+  // ── Favorites (localStorage) ──────────────────────────────────
+
+  getFavorites(): Set<number> {
+    try {
+      const raw = localStorage.getItem(FAVORITES_KEY);
+      return raw ? new Set(JSON.parse(raw) as number[]) : new Set();
+    } catch { return new Set(); }
+  }
+
+  toggleFavorite(photoId: number): boolean {
+    const favs = this.getFavorites();
+    if (favs.has(photoId)) { favs.delete(photoId); } else { favs.add(photoId); }
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favs]));
+    return favs.has(photoId);
+  }
+
+  isFavorite(photoId: number): boolean {
+    return this.getFavorites().has(photoId);
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────
 
   private folderHeaders(password?: string): HttpHeaders {
     const pwd = password ?? this.getFolderPassword() ?? '';

@@ -21,6 +21,22 @@ export const routes: Routes = [
         canActivate: [folderGuard]
       },
       {
+        path: 'favorites',
+        loadComponent: () => import('./components/gallery/gallery.component').then(m => m.GalleryComponent),
+        canActivate: [folderGuard],
+        data: { favoritesOnly: true }
+      },
+      {
+        path: 'albums',
+        loadComponent: () => import('./components/albums/albums.component').then(m => m.AlbumsComponent),
+        canActivate: [folderGuard]
+      },
+      {
+        path: 'albums/:id',
+        loadComponent: () => import('./components/album-detail/album-detail.component').then(m => m.AlbumDetailComponent),
+        canActivate: [folderGuard]
+      },
+      {
         path: 'folder-setup',
         loadComponent: () => import('./components/folder-setup/folder-setup.component').then(m => m.FolderSetupComponent)
       },

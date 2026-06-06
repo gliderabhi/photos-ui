@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 
-const API = 'http://localhost:8080/user-service';
+const API = 'https://api.sevis.store/user-service';
 const TOKEN_KEY = 'photos_token';
 
 @Injectable({ providedIn: 'root' })

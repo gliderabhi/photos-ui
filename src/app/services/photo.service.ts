@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-const BASE = 'https://api.sevis.store';
+const BASE = '';
 const API = `${BASE}/photo-service/api/photos`;
 const ALBUM_API = `${BASE}/photo-service/api/albums`;
 const FOLDER_PWD_KEY = 'folder_password';

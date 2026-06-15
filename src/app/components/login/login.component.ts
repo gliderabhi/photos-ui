@@ -29,6 +29,25 @@ import { AuthService } from '../../services/auth.service';
         <div style="width:100%;height:100%;padding:0 40px;display:flex;flex-direction:column;justify-content:center;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:-8px 0 40px rgba(0,0,0,0.2);">
 
           <div style="margin-bottom:32px;">
+            <div style="width:56px;height:56px;border-radius:13px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.12);margin-bottom:20px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="56" height="56" style="display:block;">
+                <defs>
+                  <linearGradient id="login-logo-g" x1="0" y1="0" x2="0.55" y2="0.85">
+                    <stop offset="0%" stop-color="white" stop-opacity="0.72"/>
+                    <stop offset="100%" stop-color="white" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <rect width="100" height="100" fill="white"/>
+                <g style="isolation:isolate">
+                  <rect x="14" y="20" width="36" height="62" rx="5" fill="#00EEFF" transform="rotate(-15,32,51)" style="mix-blend-mode:multiply"/>
+                  <rect x="14" y="20" width="36" height="62" rx="5" fill="url(#login-logo-g)" transform="rotate(-15,32,51)"/>
+                  <rect x="32" y="18" width="36" height="62" rx="5" fill="#FF00CC" transform="rotate(-1,50,49)" style="mix-blend-mode:multiply"/>
+                  <rect x="32" y="18" width="36" height="62" rx="5" fill="url(#login-logo-g)" transform="rotate(-1,50,49)"/>
+                  <rect x="46" y="15" width="42" height="44" rx="5" fill="#FFE800" transform="rotate(12,67,37)" style="mix-blend-mode:multiply"/>
+                  <rect x="46" y="15" width="42" height="44" rx="5" fill="url(#login-logo-g)" transform="rotate(12,67,37)"/>
+                </g>
+              </svg>
+            </div>
             <h2 style="margin:0 0 6px 0;font-size:26px;font-weight:700;color:#1e293b;">Sign In</h2>
             <p style="margin:0;font-size:13px;color:#64748b;">Enter your credentials to continue</p>
           </div>

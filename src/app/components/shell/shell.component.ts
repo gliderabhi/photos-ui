@@ -1,9 +1,10 @@
-import { Component, inject, computed, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, computed, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../services/auth.service';
 import { PhotoService } from '../../services/photo.service';
+import { IdleTimeoutService } from '../../services/idle-timeout.service';
 
 const PAGE_TITLES: Record<string, string> = {
   '/gallery': 'Gallery',
@@ -19,6 +20,27 @@ const PAGE_TITLES: Record<string, string> = {
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
+    @if (idleTimeout.showWarning()) {
+      <div class="idle-overlay">
+        <div class="idle-dialog">
+          <div style="margin-bottom:12px;">
+            <svg width="28" height="28" fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+          </div>
+          <h2 style="margin:0 0 8px;font-size:17px;font-weight:700;color:#1e293b;">Session expiring soon</h2>
+          <p style="margin:0 0 24px;font-size:14px;color:#475569;line-height:1.5;">
+            You've been inactive. You'll be logged out in
+            <strong>{{ idleTimeout.countdown() }}s</strong>.
+          </p>
+          <button (click)="idleTimeout.stayLoggedIn()"
+                  style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;">
+            Stay logged in
+          </button>
+        </div>
+      </div>
+    }
+
     <div class="shell-root">
 
       @if (sidebarOpen()) {
@@ -30,9 +52,23 @@ const PAGE_TITLES: Record<string, string> = {
 
         <!-- Logo -->
         <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;">
-          <div style="width:34px;height:34px;background:#2563eb;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          <div style="width:36px;height:36px;border-radius:9px;overflow:hidden;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.28);">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="36" height="36" style="display:block;">
+              <defs>
+                <linearGradient id="shell-logo-g" x1="0" y1="0" x2="0.55" y2="0.85">
+                  <stop offset="0%" stop-color="white" stop-opacity="0.72"/>
+                  <stop offset="100%" stop-color="white" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" fill="white"/>
+              <g style="isolation:isolate">
+                <rect x="14" y="20" width="36" height="62" rx="5" fill="#00EEFF" transform="rotate(-15,32,51)" style="mix-blend-mode:multiply"/>
+                <rect x="14" y="20" width="36" height="62" rx="5" fill="url(#shell-logo-g)" transform="rotate(-15,32,51)"/>
+                <rect x="32" y="18" width="36" height="62" rx="5" fill="#FF00CC" transform="rotate(-1,50,49)" style="mix-blend-mode:multiply"/>
+                <rect x="32" y="18" width="36" height="62" rx="5" fill="url(#shell-logo-g)" transform="rotate(-1,50,49)"/>
+                <rect x="46" y="15" width="42" height="44" rx="5" fill="#FFE800" transform="rotate(12,67,37)" style="mix-blend-mode:multiply"/>
+                <rect x="46" y="15" width="42" height="44" rx="5" fill="url(#shell-logo-g)" transform="rotate(12,67,37)"/>
+              </g>
             </svg>
           </div>
           <div>
@@ -147,6 +183,8 @@ const PAGE_TITLES: Record<string, string> = {
       .sidebar-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:199; }
       .nav-item:hover { background:rgba(255,255,255,0.06);color:#e2e8f0; }
       .nav-item.nav-active { background:rgba(37,99,235,0.15) !important;color:#60a5fa !important; }
+      .idle-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center; }
+      .idle-dialog { background:#fff;border-radius:12px;padding:32px 28px;max-width:360px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.25); }
       @media (max-width:768px) {
         .sidebar { position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%); }
         .sidebar.sidebar-mobile-open { transform:translateX(0); }
@@ -159,9 +197,10 @@ const PAGE_TITLES: Record<string, string> = {
     </style>
   `
 })
-export class ShellComponent {
-  auth = inject(AuthService);
-  photo = inject(PhotoService);
+export class ShellComponent implements OnInit, OnDestroy {
+  auth        = inject(AuthService);
+  photo       = inject(PhotoService);
+  idleTimeout = inject(IdleTimeoutService);
   private router = inject(Router);
 
   today = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
@@ -187,6 +226,9 @@ export class ShellComponent {
     if (base.startsWith('/albums/')) return 'Album';
     return PAGE_TITLES[base] ?? 'Photos';
   });
+
+  ngOnInit(): void    { this.idleTimeout.start(); }
+  ngOnDestroy(): void { this.idleTimeout.stop(); }
 
   toggleSidebar() { this.sidebarOpen.update(v => !v); }
 }

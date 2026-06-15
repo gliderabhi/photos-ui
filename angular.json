@@ -57,7 +57,8 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "allowedHosts": [".trycloudflare.com", "sevis.store", ".sevis.store"]
+            "allowedHosts": [".trycloudflare.com", "sevis.store", ".sevis.store"],
+            "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
             "production": {

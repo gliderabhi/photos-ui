@@ -1,5 +1,13 @@
-node_modules/
-dist/
-.angular/
+# Angular build artifacts
+web/node_modules/
+web/dist/
+web/.angular/
+web/photos-ui/
+web/photos-ui-serve.log
+
+# KMM (separate repo)
+kmm/
+
+# OS
 .DS_Store
-*.env
+Thumbs.db

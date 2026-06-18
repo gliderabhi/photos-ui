@@ -52,28 +52,10 @@ const PAGE_TITLES: Record<string, string> = {
 
         <!-- Logo -->
         <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;">
-          <div style="width:36px;height:36px;border-radius:9px;overflow:hidden;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.28);">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="36" height="36" style="display:block;">
-              <defs>
-                <linearGradient id="shell-logo-g" x1="0" y1="0" x2="0.55" y2="0.85">
-                  <stop offset="0%" stop-color="white" stop-opacity="0.72"/>
-                  <stop offset="100%" stop-color="white" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-              <rect width="100" height="100" fill="white"/>
-              <g style="isolation:isolate">
-                <rect x="14" y="20" width="36" height="62" rx="5" fill="#00EEFF" transform="rotate(-15,32,51)" style="mix-blend-mode:multiply"/>
-                <rect x="14" y="20" width="36" height="62" rx="5" fill="url(#shell-logo-g)" transform="rotate(-15,32,51)"/>
-                <rect x="32" y="18" width="36" height="62" rx="5" fill="#FF00CC" transform="rotate(-1,50,49)" style="mix-blend-mode:multiply"/>
-                <rect x="32" y="18" width="36" height="62" rx="5" fill="url(#shell-logo-g)" transform="rotate(-1,50,49)"/>
-                <rect x="46" y="15" width="42" height="44" rx="5" fill="#FFE800" transform="rotate(12,67,37)" style="mix-blend-mode:multiply"/>
-                <rect x="46" y="15" width="42" height="44" rx="5" fill="url(#shell-logo-g)" transform="rotate(12,67,37)"/>
-              </g>
-            </svg>
-          </div>
+          <img src="photo-logo.png" alt="Photos" style="width:44px;height:44px;border-radius:10px;object-fit:contain;flex-shrink:0;" />
           <div>
-            <p style="margin:0;color:#fff;font-weight:700;font-size:14px;line-height:1.2;">Photos</p>
-            <p style="margin:0;color:#64748b;font-size:11px;">Private Photo Vault</p>
+            <p style="margin:0;color:#fff;font-weight:700;font-size:17px;line-height:1.2;">Photos</p>
+            <p style="margin:0;color:#64748b;font-size:12px;">Private Photo Vault</p>
           </div>
         </div>
 

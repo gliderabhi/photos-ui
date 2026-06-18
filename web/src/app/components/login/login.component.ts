@@ -8,10 +8,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [ReactiveFormsModule],
   template: `
-    <div style="position:fixed;top:0;left:0;width:100vw;height:100vh;overflow:hidden;">
-
-      <!-- Full screen background image -->
-      <img src="https://www.handyrecovery.com/wp-content/uploads/2023/10/best-photo-organizer-apps-950x500.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;" />
+    <div style="position:fixed;top:0;left:0;width:100vw;height:100vh;overflow:hidden;background:url('/photosBg.jpeg') center/cover no-repeat;">
 
       <!-- Top center info bar -->
       <div style="position:absolute;top:0;left:0;right:0;z-index:10;display:flex;flex-direction:column;align-items:center;padding:20px 40px;">

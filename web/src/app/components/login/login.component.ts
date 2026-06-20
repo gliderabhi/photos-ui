@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { SeoService } from '../../services/seo.service';
 
 @Component({
   selector: 'app-login',
@@ -101,6 +102,14 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+
+  constructor() {
+    inject(SeoService).setPage({
+      title: 'Sign In',
+      description: 'Sign in to Photos, your private encrypted photo storage vault with Android auto-upload and album organization.',
+      url: 'https://photos.sevis.store/login',
+    });
+  }
 
   form = this.fb.group({
     email: ['admin@sevis.com', [Validators.required, Validators.email]],

@@ -1,10 +1,11 @@
-import { Component, OnDestroy, OnInit, inject, computed, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, computed, signal, effect } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../services/auth.service';
 import { PhotoService } from '../../services/photo.service';
 import { IdleTimeoutService } from '../../services/idle-timeout.service';
+import { SeoService } from '../../services/seo.service';
 
 const PAGE_TITLES: Record<string, string> = {
   '/gallery': 'Gallery',
@@ -184,6 +185,7 @@ export class ShellComponent implements OnInit, OnDestroy {
   photo       = inject(PhotoService);
   idleTimeout = inject(IdleTimeoutService);
   private router = inject(Router);
+  private seo    = inject(SeoService);
 
   today = new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -207,6 +209,14 @@ export class ShellComponent implements OnInit, OnDestroy {
     const base = u.split('?')[0];
     if (base.startsWith('/albums/')) return 'Album';
     return PAGE_TITLES[base] ?? 'Photos';
+  });
+
+  private _ = effect(() => {
+    this.seo.setPage({
+      title: this.pageTitle(),
+      description: 'Photos — your private encrypted photo vault with Android auto-upload and album organization.',
+      url: `https://photos.sevis.store${this.url() ?? ''}`,
+    });
   });
 
   ngOnInit(): void    { this.idleTimeout.start(); }

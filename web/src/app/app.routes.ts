@@ -3,13 +3,13 @@ import { authGuard } from './guards/auth.guard';
 import { folderGuard } from './guards/folder.guard';
 
 export const routes: Routes = [
+  { path: '', pathMatch: 'full', loadComponent: () => import('./components/landing/landing.component').then(m => m.LandingComponent) },
   { path: 'login', loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent) },
   {
     path: '',
     loadComponent: () => import('./components/shell/shell.component').then(m => m.ShellComponent),
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'gallery', pathMatch: 'full' },
       {
         path: 'gallery',
         loadComponent: () => import('./components/gallery/gallery.component').then(m => m.GalleryComponent),

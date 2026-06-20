@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /login
+Disallow: /gallery
+Disallow: /upload
+Disallow: /albums
+Disallow: /favorites
+Disallow: /folder-setup
+Disallow: /folder-unlock
+Sitemap: https://photos.sevis.store/sitemap.xml

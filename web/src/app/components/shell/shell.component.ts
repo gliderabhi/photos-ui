@@ -109,13 +109,11 @@ const PAGE_TITLES: Record<string, string> = {
         <!-- User footer -->
         <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;">
           <div style="width:32px;height:32px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">
-            {{ userInitial() }}
+            {{ auth.userInitial() }}
           </div>
           <div style="flex:1;min-width:0;">
-            <p style="margin:0;color:#e2e8f0;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Photos User</p>
-            <p style="margin:0;color:#64748b;font-size:11px;">
-              @if (photo.folderUnlocked()) { Folder Unlocked } @else { Folder Locked }
-            </p>
+            <p style="margin:0;color:#e2e8f0;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ auth.user()?.name }}</p>
+            <p style="margin:0;color:#64748b;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ auth.user()?.email }}</p>
           </div>
           <button (click)="auth.logout()" title="Logout"
                   style="background:none;border:none;cursor:pointer;color:#64748b;padding:4px;border-radius:4px;display:flex;align-items:center;">
@@ -191,7 +189,7 @@ export class ShellComponent implements OnInit, OnDestroy {
 
   sidebarOpen = signal(false);
 
-  userInitial = computed(() => 'P');
+  userInitial = computed(() => this.auth.userInitial());
 
   private url = toSignal(
     this.router.events.pipe(

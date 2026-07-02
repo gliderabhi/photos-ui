@@ -33,10 +33,10 @@
         <p>The Photos Android app automatically uploads new photos from your device as soon as they're taken. No manual syncing required.</p>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card feature-card--highlight">
         <div class="feature-icon">🔒</div>
-        <h3>Encrypted Folder Storage</h3>
-        <p>Your photos are stored in a password-protected encrypted folder. Unlock it each session to access your library — your data stays secure at rest.</p>
+        <h3>AES-256 Encrypted at Rest</h3>
+        <p>Every photo is encrypted on disk using AES-256-GCM before it's saved. Even with physical access to the server, files are unreadable without your password.</p>
       </div>
 
       <div class="feature-card">
@@ -57,6 +57,38 @@
         <p>Your photos never leave your server. No Google Photos. No iCloud. No third-party cloud. Complete data ownership and privacy.</p>
       </div>
 
+    </div>
+  </section>
+
+  <section class="encryption-detail">
+    <div class="encryption-inner">
+      <div class="encryption-badge">🔐 End-to-End Encryption at Rest</div>
+      <h2>Your photos are encrypted before they touch the disk</h2>
+      <p class="encryption-sub">
+        Unlike cloud services that encrypt storage volumes, Photos encrypts each file individually using your folder password — so even server access gives an attacker nothing but gibberish.
+      </p>
+      <div class="encryption-pillars">
+        <div class="pillar">
+          <div class="pillar-icon">🔑</div>
+          <h4>Key never stored</h4>
+          <p>The AES-256 encryption key is derived from your password on every request using PBKDF2. It's never written to disk or database.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">🧂</div>
+          <h4>Per-user unique salt</h4>
+          <p>A cryptographically random salt is generated once per account, ensuring identical passwords produce different keys.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">🛡️</div>
+          <h4>AES-256-GCM</h4>
+          <p>Each file is encrypted with a unique IV using AES-256-GCM — authenticated encryption that detects any tampering.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">📴</div>
+          <h4>Offline-proof</h4>
+          <p>Physical access to the laptop or server — even with the database — cannot reveal your photos without the password.</p>
+        </div>
+      </div>
     </div>
   </section>
 

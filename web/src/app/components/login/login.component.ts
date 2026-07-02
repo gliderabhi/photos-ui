@@ -1,8 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, AfterViewInit, NgZone } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { SeoService } from '../../services/seo.service';
+
+declare const google: any;
 
 @Component({
   selector: 'app-login',
@@ -91,6 +93,16 @@ import { SeoService } from '../../services/seo.service';
               {{ loading ? 'Signing in…' : 'Sign In' }}
             </button>
 
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+              <span style="font-size:12px;color:#94a3b8;white-space:nowrap;">or continue with</span>
+              <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+            </div>
+
+            <div style="display:flex;justify-content:center;">
+              <div id="google-signin-btn"></div>
+            </div>
+
           </form>
         </div>
       </div>
@@ -98,10 +110,11 @@ import { SeoService } from '../../services/seo.service';
     </div>
   `
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private zone = inject(NgZone);
 
   constructor() {
     inject(SeoService).setPage({
@@ -117,6 +130,32 @@ export class LoginComponent {
   });
   loading = false;
   error = '';
+
+  ngAfterViewInit(): void {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = () => {
+      google.accounts.id.initialize({
+        client_id: '1059813087193-btfkk2bhtj50grqjta6anvo5i7vq77pl.apps.googleusercontent.com',
+        callback: (response: { credential: string }) =>
+          this.zone.run(() => this.onGoogleLogin(response.credential)),
+      });
+      google.accounts.id.renderButton(document.getElementById('google-signin-btn')!, {
+        theme: 'outline', size: 'large', width: 300, text: 'signin_with',
+      });
+    };
+    document.head.appendChild(script);
+  }
+
+  onGoogleLogin(idToken: string): void {
+    this.loading = true;
+    this.error = '';
+    this.auth.googleLogin(idToken).subscribe({
+      next: () => this.router.navigate(['/gallery']),
+      error: (err: any) => { this.error = err.error?.message ?? 'Google sign-in failed'; this.loading = false; },
+    });
+  }
 
   submit() {
     if (this.form.invalid) return;

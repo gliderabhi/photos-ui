@@ -10,6 +10,7 @@ import { SeoService } from '../../services/seo.service';
 const PAGE_TITLES: Record<string, string> = {
   '/gallery': 'Gallery',
   '/upload': 'Upload Photos',
+  '/videos': 'Videos',
   '/albums': 'Albums',
   '/favorites': 'Favorites',
   '/folder-setup': 'Folder Settings',
@@ -77,6 +78,14 @@ const PAGE_TITLES: Record<string, string> = {
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
             </svg>
             Upload
+          </a>
+
+          <a routerLink="/videos" routerLinkActive="nav-active" class="nav-item"
+             style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;text-decoration:none;color:#94a3b8;font-size:13px;font-weight:500;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            Videos
           </a>
 
           <a routerLink="/albums" routerLinkActive="nav-active" class="nav-item"

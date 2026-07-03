@@ -40,7 +40,7 @@ interface GroupWithBlobs { date: string; photos: PhotoWithBlob[]; }
           <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;" width="15" height="15" fill="none" stroke="#9aa0a6" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/>
           </svg>
-          <input [(ngModel)]="searchQuery" placeholder="Search by name or date…"
+          <input [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by name, date, or album…"
                  style="width:100%;padding:7px 12px 7px 32px;border:1px solid #dadce0;border-radius:24px;font-size:13px;outline:none;box-sizing:border-box;"/>
         </div>
 
@@ -325,6 +325,11 @@ export class GalleryComponent implements OnInit {
   // Favorites
   favorites = signal<Set<number>>(new Set());
 
+  // Photo ids belonging to albums whose name matches the current search query —
+  // album membership isn't in PhotoResponse, so this is resolved separately
+  // (see refreshAlbumMatches) rather than as a pure computed filter.
+  albumMatchedIds = signal<Set<number>>(new Set());
+
   filteredGroups = computed(() => {
     let gs = this.groups();
     if (this.showFavoritesOnly()) {
@@ -333,17 +338,41 @@ export class GalleryComponent implements OnInit {
     }
     const q = this.searchQuery.toLowerCase().trim();
     if (q) {
+      const albumIds = this.albumMatchedIds();
       gs = gs.map(g => ({
         ...g,
         photos: g.photos.filter(p =>
           p.originalFilename.toLowerCase().includes(q) ||
           g.date.includes(q) ||
-          this.formatDate(g.date).toLowerCase().includes(q)
+          this.formatDate(g.date).toLowerCase().includes(q) ||
+          albumIds.has(p.id)
         )
       })).filter(g => g.photos.length > 0);
     }
     return gs;
   });
+
+  onSearchChange() {
+    this.refreshAlbumMatches();
+  }
+
+  private refreshAlbumMatches() {
+    const q = this.searchQuery.toLowerCase().trim();
+    if (!q) { this.albumMatchedIds.set(new Set()); return; }
+    const matching = this.albums().filter(a => a.name.toLowerCase().includes(q));
+    if (!matching.length) { this.albumMatchedIds.set(new Set()); return; }
+    const ids = new Set<number>();
+    let remaining = matching.length;
+    matching.forEach(album => {
+      this.photo.getAlbumPhotos(album.id).subscribe({
+        next: (photos) => {
+          photos.forEach(p => ids.add(p.id));
+          if (--remaining === 0) this.albumMatchedIds.set(new Set(ids));
+        },
+        error: () => { if (--remaining === 0) this.albumMatchedIds.set(new Set(ids)); }
+      });
+    });
+  }
 
   flatPhotos = computed(() => this.filteredGroups().flatMap(g => g.photos));
 

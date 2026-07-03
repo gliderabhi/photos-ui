@@ -8,5 +8,22 @@
     "target": "http://localhost:8080",
     "secure": false,
     "changeOrigin": true
+  },
+  "/stream-service": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/app.apk": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": { "^/app.apk": "/photo-service/downloads/app.apk" }
+  },
+  "/app-mobile.apk": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": { "^/app-mobile.apk": "/photo-service/downloads/app-mobile.apk" }
   }
 }

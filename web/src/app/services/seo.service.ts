@@ -1,6 +1,4 @@
-import { Injectable, inject } from '@angular/core';
-import { Title, Meta } from '@angular/platform-browser';
-import { DOCUMENT } from '@angular/common';
+import { Injectable } from '@angular/core';
 
 export interface PageMeta {
   title: string;
@@ -13,30 +11,37 @@ export interface PageMeta {
 
 @Injectable({ providedIn: 'root' })
 export class SeoService {
-  private title = inject(Title);
-  private meta  = inject(Meta);
-  private doc   = inject(DOCUMENT);
-
   setPage(p: PageMeta): void {
     const full = p.title === 'Photos' ? 'Photos — Private Photo Vault' : `${p.title} | Photos`;
-    this.title.setTitle(full);
-    this.meta.updateTag({ name: 'description', content: p.description });
-    this.meta.updateTag({ property: 'og:title', content: full });
-    this.meta.updateTag({ property: 'og:description', content: p.description });
-    this.meta.updateTag({ property: 'og:type', content: p.type ?? 'website' });
-    if (p.url)      this.meta.updateTag({ property: 'og:url', content: p.url });
-    if (p.imageUrl) this.meta.updateTag({ property: 'og:image', content: p.imageUrl });
+    document.title = full;
+    this.setMeta('description', p.description);
+    this.setMeta('og:title', full, true);
+    this.setMeta('og:description', p.description, true);
+    this.setMeta('og:type', p.type ?? 'website', true);
+    if (p.url)      this.setMeta('og:url', p.url, true);
+    if (p.imageUrl) this.setMeta('og:image', p.imageUrl, true);
     this.setJsonLd(p.jsonLd ?? null);
   }
 
+  private setMeta(nameOrProp: string, content: string, isOg = false): void {
+    const attr = isOg ? 'property' : 'name';
+    let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`) as HTMLMetaElement | null;
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute(attr, nameOrProp);
+      document.head.appendChild(el);
+    }
+    el.content = content;
+  }
+
   private setJsonLd(data: object | null): void {
-    let el = this.doc.getElementById('json-ld') as HTMLScriptElement | null;
+    let el = document.getElementById('json-ld') as HTMLScriptElement | null;
     if (!data) { el?.remove(); return; }
     if (!el) {
-      el = this.doc.createElement('script');
+      el = document.createElement('script');
       el.id = 'json-ld';
       el.type = 'application/ld+json';
-      this.doc.head.appendChild(el);
+      document.head.appendChild(el);
     }
     el.textContent = JSON.stringify(data);
   }

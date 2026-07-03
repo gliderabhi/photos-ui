@@ -10,13 +10,24 @@ const USER_KEY  = 'photos_user';
 interface AuthResponse { token: string; name?: string; email?: string; role?: string; }
 export interface PhotosUser { name: string; email: string; }
 
+// A malformed value here (e.g. from a corrupted/partial write) would otherwise
+// throw synchronously inside AuthService's field initializer — during dependency
+// injection, not app logic — which can crash unrelated services resolved
+// afterward with a confusing cascading NG0203 error instead of a clear cause.
+function readStoredUser(): PhotosUser | null {
+  try {
+    return JSON.parse(localStorage.getItem(USER_KEY) || 'null');
+  } catch {
+    localStorage.removeItem(USER_KEY);
+    return null;
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   isLoggedIn = signal(!!localStorage.getItem(TOKEN_KEY));
 
-  private _user = signal<PhotosUser | null>(
-    JSON.parse(localStorage.getItem(USER_KEY) || 'null')
-  );
+  private _user = signal<PhotosUser | null>(readStoredUser());
   readonly user = this._user.asReadonly();
 
   userInitial = computed(() => (this._user()?.name ?? 'P').charAt(0).toUpperCase());
@@ -53,7 +64,14 @@ export class AuthService {
     localStorage.removeItem('folder_password');
     this._user.set(null);
     this.isLoggedIn.set(false);
-    this.router.navigate(['/login']);
+    // logout() can be called from AuthInterceptor's error handler, i.e. mid-flight
+    // during a route's own HTTP calls — navigating synchronously here can race the
+    // Router's in-progress activation of that route (whose standalone component may
+    // still be creating its own environment injector) and trigger a spurious
+    // NG0200 "Circular dependency detected for StandaloneService". Deferring past
+    // the current call stack (and any pending microtasks the activation is using)
+    // lets that activation finish first.
+    setTimeout(() => this.router.navigate(['/login']), 0);
   }
 
   getToken(): string | null {

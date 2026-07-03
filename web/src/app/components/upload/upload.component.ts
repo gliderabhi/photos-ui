@@ -1,10 +1,12 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { PhotoService } from '../../services/photo.service';
+import { VideoService } from '../../services/video.service';
 
 interface UploadItem {
   file: File;
-  preview: string;
+  kind: 'photo' | 'video';
+  preview: string | null; // no client-side frame extraction for video previews — just the filename is shown
   status: 'pending' | 'uploading' | 'done' | 'error';
   errorMsg?: string;
 }
@@ -16,17 +18,25 @@ interface UploadItem {
     <div style="max-width:960px;margin:0 auto;padding-bottom:40px;">
 
       <!-- Header -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
         <div>
-          <h1 style="margin:0;font-size:22px;font-weight:600;color:#202124;">Upload photos</h1>
-          <p style="margin:4px 0 0;font-size:13px;color:#5f6368;">Add photos to your private vault</p>
+          <h1 style="margin:0;font-size:22px;font-weight:600;color:#202124;">Upload photos & videos</h1>
+          <p style="margin:4px 0 0;font-size:13px;color:#5f6368;">Add photos and videos to your private vault</p>
         </div>
-        @if (doneCount() > 0) {
-          <button (click)="router.navigate(['/gallery'])"
-                  style="display:flex;align-items:center;gap:6px;padding:9px 18px;background:#1a73e8;color:#fff;border:none;border-radius:24px;font-size:14px;font-weight:500;cursor:pointer;">
-            View in Gallery
-          </button>
-        }
+        <div style="display:flex;gap:10px;">
+          @if (donePhotoCount() > 0) {
+            <button (click)="router.navigate(['/gallery'])"
+                    style="display:flex;align-items:center;gap:6px;padding:9px 18px;background:#1a73e8;color:#fff;border:none;border-radius:24px;font-size:14px;font-weight:500;cursor:pointer;">
+              View in Gallery
+            </button>
+          }
+          @if (doneVideoCount() > 0) {
+            <button (click)="router.navigate(['/videos'])"
+                    style="display:flex;align-items:center;gap:6px;padding:9px 18px;background:#1a73e8;color:#fff;border:none;border-radius:24px;font-size:14px;font-weight:500;cursor:pointer;">
+              View in Videos
+            </button>
+          }
+        </div>
       </div>
 
       <!-- Drop zone -->
@@ -40,22 +50,22 @@ interface UploadItem {
           </svg>
         </div>
         <p style="margin:0;font-size:16px;font-weight:500;color:#202124;">
-          {{ dragging() ? 'Drop photos here' : 'Drag photos here' }}
+          {{ dragging() ? 'Drop files here' : 'Drag photos or videos here' }}
         </p>
         <p style="margin:8px 0 16px;font-size:13px;color:#5f6368;">or</p>
         <span style="display:inline-block;padding:8px 24px;background:#1a73e8;color:#fff;border-radius:24px;font-size:14px;font-weight:500;">
           Select from computer
         </span>
-        <p style="margin:16px 0 0;font-size:12px;color:#9aa0a6;">PNG, JPG, WEBP · up to 20 MB each</p>
+        <p style="margin:16px 0 0;font-size:12px;color:#9aa0a6;">Photos: PNG, JPG, WEBP · Videos: MP4, MOV, MKV, WEBM</p>
       </div>
-      <input #fileInput type="file" multiple accept="image/*" style="display:none" (change)="onFileSelect($event)" />
+      <input #fileInput type="file" multiple accept="image/*,video/*" style="display:none" (change)="onFileSelect($event)" />
 
       <!-- Selected photos grid -->
       @if (queue().length > 0) {
         <div style="margin-top:28px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
             <span style="font-size:14px;color:#5f6368;">
-              {{ queue().length }} photo{{ queue().length !== 1 ? 's' : '' }} selected
+              {{ queue().length }} file{{ queue().length !== 1 ? 's' : '' }} selected
               @if (doneCount() > 0) { · {{ doneCount() }} uploaded }
             </span>
             <div style="display:flex;gap:10px;align-items:center;">
@@ -67,7 +77,7 @@ interface UploadItem {
                 <button (click)="uploadAll()" [disabled]="uploading()"
                         style="padding:8px 24px;background:#1a73e8;color:#fff;border:none;border-radius:24px;font-size:14px;font-weight:500;cursor:pointer;"
                         [style.opacity]="uploading() ? '0.7' : '1'">
-                  {{ uploading() ? 'Uploading…' : 'Upload ' + pendingCount() + ' photo' + (pendingCount() !== 1 ? 's' : '') }}
+                  {{ uploading() ? 'Uploading…' : 'Upload ' + pendingCount() + ' file' + (pendingCount() !== 1 ? 's' : '') }}
                 </button>
               }
             </div>
@@ -76,7 +86,15 @@ interface UploadItem {
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:4px;">
             @for (item of queue(); track item.file.name) {
               <div style="position:relative;aspect-ratio:1;border-radius:4px;overflow:hidden;background:#f1f3f4;">
-                <img [src]="item.preview" style="width:100%;height:100%;object-fit:cover;" />
+                @if (item.kind === 'photo') {
+                  <img [src]="item.preview" style="width:100%;height:100%;object-fit:cover;" />
+                } @else {
+                  <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#e8eaed;">
+                    <svg width="32" height="32" fill="none" stroke="#5f6368" stroke-width="1.6" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                  </div>
+                }
 
                 <!-- Status overlay -->
                 @if (item.status === 'uploading') {
@@ -122,20 +140,24 @@ interface UploadItem {
 })
 export class UploadComponent {
   private photo = inject(PhotoService);
+  private video = inject(VideoService);
   router = inject(Router);
 
   queue = signal<UploadItem[]>([]);
   dragging = signal(false);
   uploading = signal(false);
 
-  pendingCount = computed(() => this.queue().filter(i => i.status === 'pending').length);
-  doneCount    = computed(() => this.queue().filter(i => i.status === 'done').length);
-  allDone      = computed(() => this.queue().length > 0 && this.queue().every(i => i.status === 'done' || i.status === 'error'));
+  pendingCount    = computed(() => this.queue().filter(i => i.status === 'pending').length);
+  doneCount       = computed(() => this.queue().filter(i => i.status === 'done').length);
+  donePhotoCount  = computed(() => this.queue().filter(i => i.status === 'done' && i.kind === 'photo').length);
+  doneVideoCount  = computed(() => this.queue().filter(i => i.status === 'done' && i.kind === 'video').length);
+  allDone         = computed(() => this.queue().length > 0 && this.queue().every(i => i.status === 'done' || i.status === 'error'));
 
   onDragOver(e: DragEvent) { e.preventDefault(); this.dragging.set(true); }
   onDrop(e: DragEvent) {
     e.preventDefault(); this.dragging.set(false);
-    this.addToQueue(Array.from(e.dataTransfer?.files ?? []).filter(f => f.type.startsWith('image/')));
+    this.addToQueue(Array.from(e.dataTransfer?.files ?? [])
+      .filter(f => f.type.startsWith('image/') || f.type.startsWith('video/')));
   }
   onFileSelect(e: Event) {
     const input = e.target as HTMLInputElement;
@@ -143,11 +165,15 @@ export class UploadComponent {
     input.value = '';
   }
   addToQueue(files: File[]) {
-    const newItems: UploadItem[] = files.map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      status: 'pending'
-    }));
+    const newItems: UploadItem[] = files.map(file => {
+      const isVideo = file.type.startsWith('video/');
+      return {
+        file,
+        kind: isVideo ? 'video' : 'photo',
+        preview: isVideo ? null : URL.createObjectURL(file),
+        status: 'pending'
+      };
+    });
     this.queue.update(q => [...q, ...newItems]);
   }
   private updateItem(file: File, patch: Partial<UploadItem>) {
@@ -160,10 +186,13 @@ export class UploadComponent {
     if (!pending.length) { this.uploading.set(false); return; }
     for (const item of pending) {
       this.updateItem(item.file, { status: 'uploading' });
-      this.photo.upload(item.file).subscribe({
-        next: () => { this.updateItem(item.file, { status: 'done' }); if (++done === pending.length) this.uploading.set(false); },
-        error: (err) => { this.updateItem(item.file, { status: 'error', errorMsg: err.error?.message ?? 'Upload failed' }); if (++done === pending.length) this.uploading.set(false); }
-      });
+      const onDone = () => { this.updateItem(item.file, { status: 'done' }); if (++done === pending.length) this.uploading.set(false); };
+      const onError = (err: any) => { this.updateItem(item.file, { status: 'error', errorMsg: err.error?.message ?? 'Upload failed' }); if (++done === pending.length) this.uploading.set(false); };
+      if (item.kind === 'photo') {
+        this.photo.upload(item.file).subscribe({ next: onDone, error: onError });
+      } else {
+        this.video.uploadVideo(item.file).subscribe({ next: onDone, error: onError });
+      }
     }
   }
 }

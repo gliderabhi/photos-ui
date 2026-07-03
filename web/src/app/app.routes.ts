@@ -21,6 +21,11 @@ export const routes: Routes = [
         canActivate: [folderGuard]
       },
       {
+        path: 'videos',
+        loadComponent: () => import('./components/videos/videos.component').then(m => m.VideosComponent),
+        canActivate: [folderGuard]
+      },
+      {
         path: 'favorites',
         loadComponent: () => import('./components/gallery/gallery.component').then(m => m.GalleryComponent),
         canActivate: [folderGuard],

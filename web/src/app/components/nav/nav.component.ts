@@ -16,6 +16,8 @@ import { PhotoService } from '../../services/photo.service';
              class="photos-nav-link">Gallery</a>
           <a routerLink="/upload" routerLinkActive="photos-nav-link-active"
              class="photos-nav-link">Upload</a>
+          <a routerLink="/videos" routerLinkActive="photos-nav-link-active"
+             class="photos-nav-link">Videos</a>
         }
       </div>
       <div style="display:flex;align-items:center;gap:0.75rem">

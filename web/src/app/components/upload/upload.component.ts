@@ -1,7 +1,15 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
+import { Observable, from, of } from 'rxjs';
+import { catchError, mergeMap, tap } from 'rxjs/operators';
 import { PhotoService } from '../../services/photo.service';
 import { VideoService } from '../../services/video.service';
+
+// Gateway caps each user at 60 requests/min; firing every file's upload at
+// once (as a plain for-loop did) blows through that in one burst on a
+// multi-photo selection. Cap in-flight uploads instead of throttling by
+// time, so uploads still run as fast as the rate limit safely allows.
+const MAX_CONCURRENT_UPLOADS = 4;
 
 interface UploadItem {
   file: File;
@@ -184,15 +192,20 @@ export class UploadComponent {
     const pending = this.queue().filter(i => i.status === 'pending');
     let done = 0;
     if (!pending.length) { this.uploading.set(false); return; }
-    for (const item of pending) {
-      this.updateItem(item.file, { status: 'uploading' });
-      const onDone = () => { this.updateItem(item.file, { status: 'done' }); if (++done === pending.length) this.uploading.set(false); };
-      const onError = (err: any) => { this.updateItem(item.file, { status: 'error', errorMsg: err.error?.message ?? 'Upload failed' }); if (++done === pending.length) this.uploading.set(false); };
-      if (item.kind === 'photo') {
-        this.photo.upload(item.file).subscribe({ next: onDone, error: onError });
-      } else {
-        this.video.uploadVideo(item.file).subscribe({ next: onDone, error: onError });
-      }
-    }
+    from(pending).pipe(
+      mergeMap(item => {
+        this.updateItem(item.file, { status: 'uploading' });
+        const request$: Observable<unknown> = item.kind === 'photo' ? this.photo.upload(item.file) : this.video.uploadVideo(item.file);
+        return request$.pipe(
+          tap(() => this.updateItem(item.file, { status: 'done' })),
+          catchError(err => {
+            this.updateItem(item.file, { status: 'error', errorMsg: err.error?.message ?? 'Upload failed' });
+            return of(null);
+          })
+        );
+      }, MAX_CONCURRENT_UPLOADS)
+    ).subscribe(() => {
+      if (++done === pending.length) this.uploading.set(false);
+    });
   }
 }
